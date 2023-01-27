@@ -1,0 +1,19 @@
+name: Create/update tag
+on:
+  push:
+    branch: "main"
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set outputs
+        id: short_sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Check outputs
+        run: echo ${{ steps.short_sha.outputs.sha_short }}
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ steps.vars.outputs.sha_short }}
+          message: ${{ steps.vars.outputs.sha_short }} release
