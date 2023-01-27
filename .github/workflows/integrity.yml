@@ -10,6 +10,8 @@ concurrency:
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '.github/**'
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
