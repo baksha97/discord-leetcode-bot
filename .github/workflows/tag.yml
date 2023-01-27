@@ -1,4 +1,4 @@
-name: Create/update tag
+name: Tag with short sha
 on:
   workflow_dispatch:
   push:
