@@ -42,6 +42,7 @@ application {
 }
 
 tasks.withType<Jar> {
+    // Otherwise you'll get a "No main manifest attribute" error
     manifest {
         attributes["Main-Class"] = "main.MainKt"
     }
@@ -49,7 +50,7 @@ tasks.withType<Jar> {
     // To avoid the duplicate handling strategy error
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    // To add all of the dependencies otherwise a "NoClassDefFoundError" error
+    // To add all of the dependencies
     from(sourceSets.main.get().output)
 
     dependsOn(configurations.runtimeClasspath)

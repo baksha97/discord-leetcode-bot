@@ -44,6 +44,10 @@ suspend fun main(args: Array<String>) {
             println("Guilds: ${guilds.joinToString { it.name }}")
         }
 
+        onException {
+            println("Exception $this")
+        }
+
         localeOf(Language.EN) {
             helpName = "Help"
             helpCategory = "Utility"
