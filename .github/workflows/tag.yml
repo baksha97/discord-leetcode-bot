@@ -3,8 +3,8 @@ on:
   workflow_dispatch:
   push:
     branch: main
-    paths-ignore:
-      - '.github/**'
+#    paths-ignore:
+#      - '.github/**'
 
 concurrency:
   group: ${{ github.ref }}/tag
@@ -13,10 +13,6 @@ concurrency:
 jobs:
   create-tag:
     runs-on: self-hosted
-    permissions:
-      deployments: write
-      packages: write
-      repository-projects: write
     steps:
       - uses: actions/checkout@v3
       - name: Set outputs
@@ -25,6 +21,9 @@ jobs:
       - name: Check outputs
         run: echo ${{ steps.short_sha.outputs.sha_short }}
       - uses: rickstaa/action-create-tag@v1
+        env:
+          # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: "${{ steps.short_sha.outputs.sha_short }}"
           message: "${{ steps.short_sha.outputs.sha_short }} release"
