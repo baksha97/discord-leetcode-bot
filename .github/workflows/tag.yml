@@ -31,21 +31,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-               #!/usr/bin/env bash
-               
-               set -u
-               pwd
-               ls
-          #          cd /github/workspace || exit 1
-
-          # Env and options
-               if [[ -z ${GITHUB_TOKEN} ]]
-               then
-               echo "The GITHUB_TOKEN environment variable is not defined."
-               exit 1
-               fi
-               
-               BRANCH=${1}
+          set -u
+          pwd
+          ls
+           #          cd /github/workspace || exit 1
+          
+           # Env and options
+                if [[ -z ${GITHUB_TOKEN} ]]
+                then
+                echo "The GITHUB_TOKEN environment variable is not defined."
+                exit 1
+                fi
+          
+                BRANCH=${1}
                NAME=${2}
           MESSAGE=${3}
           DRAFT=${4}
