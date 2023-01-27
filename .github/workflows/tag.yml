@@ -19,5 +19,5 @@ jobs:
         run: echo ${{ steps.short_sha.outputs.sha_short }}
       - uses: rickstaa/action-create-tag@v1
         with:
-          tag: ${{ steps.vars.outputs.sha_short }}
-          message: ${{ steps.vars.outputs.sha_short }} release
+          tag: "${{ steps.vars.outputs.sha_short }}"
+          message: "${{ steps.vars.outputs.sha_short }} release"
