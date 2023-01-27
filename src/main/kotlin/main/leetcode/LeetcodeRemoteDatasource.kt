@@ -11,7 +11,7 @@ import me.jakejmattson.discordkt.annotations.Service
 
 @Service
 class LeetcodeRemoteDatasource {
-    suspend fun getStatistics(username: String): Result<LeetcodeUser> =
+    suspend fun getStatistics(username: String): Result<LeetcodeStatistics> =
         Environment
             .client
             .fetchLeetcodeStatistics(username)
@@ -44,17 +44,17 @@ private suspend fun HttpClient.fetchLeetcodeStatistics(username: String, year: I
 
 }
 
-private fun LeetcodeQueryResponse.toDomain(username: String): LeetcodeUser {
+private fun LeetcodeQueryResponse.toDomain(username: String): LeetcodeStatistics {
     fun findOrDefaultSolved(difficulty: String): Long =
         data.matchedUser.submitStatsGlobal.acSubmissionNum.find { it.difficulty == difficulty }?.count ?: 0
 
     fun calculateAcceptanceRate(): Double {
-        val actual = findOrDefaultSolved("All").takeIf { it != 0L } ?: return 0.0
+        val actual = data.matchedUser.submitStats.acSubmissionNum.find { it.difficulty == "All" }?.count ?: return 0.0
         val total = data.matchedUser.submitStats.totalSubmissionNum.find { it.difficulty == "All" }?.count ?: return 0.0
         return (actual / total).toDouble()
     }
 
-    return LeetcodeUser(
+    return LeetcodeStatistics(
         username = username,
         totalSolved = findOrDefaultSolved("All"),
         easySolved = findOrDefaultSolved("Easy"),
@@ -67,7 +67,7 @@ private fun LeetcodeQueryResponse.toDomain(username: String): LeetcodeUser {
 }
 
 suspend fun main() {
-    val res = LeetcodeRemoteDatasource().getStatistics("aarif22827")
+    val res = LeetcodeRemoteDatasource().getStatistics("baksha97")
     println(res)
 }
 

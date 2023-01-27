@@ -10,13 +10,13 @@ class LeetcodeService(
     private val api: LeetcodeRemoteDatasource
 ) {
 
-    suspend fun getStatistics(username: String): Result<LeetcodeUser> =
+    suspend fun getStatistics(username: String): Result<LeetcodeStatistics> =
         api.getStatistics(username)
             .onFailure {
                 println(it)
             }
 
-    suspend fun allStatistics(): List<Pair<String, LeetcodeUser>> =
+    suspend fun allStatistics(): List<Pair<String, LeetcodeStatistics>> =
         storage
             .allUsers()
             .toSet()
@@ -24,8 +24,8 @@ class LeetcodeService(
                 println(it.second)
                 val stats =
                     api
-                    .getStatistics(it.second)
-                    .getOrNull()
+                        .getStatistics(it.second)
+                        .getOrNull()
                         ?: return@map null
                 return@map Pair(it.first, stats)
             }
