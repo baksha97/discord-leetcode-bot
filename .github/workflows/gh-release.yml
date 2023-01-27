@@ -1,4 +1,4 @@
-name: Tag with short sha
+name: Create Release Tag
 on:
   workflow_dispatch:
   push:
@@ -20,10 +20,10 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Check outputs
         run: echo ${{ steps.short_sha.outputs.sha_short }}
-      - uses: rickstaa/action-create-tag@v1
-        env:
-          # This token is provided by Actions, you do not need to create your own token
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: nickatnight/releases-action@v4
         with:
-          tag: "${{ steps.short_sha.outputs.sha_short }}"
-          message: "${{ steps.short_sha.outputs.sha_short }} release"
+          name: main-${{ steps.short_sha.outputs.sha_short }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
