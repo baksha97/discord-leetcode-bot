@@ -22,7 +22,6 @@ jobs:
         run: echo ${{ steps.short_sha.outputs.sha_short }}
       - uses: rickstaa/action-create-tag@v1
         env:
-          # This token is provided by Actions, you do not need to create your own token
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: ${{ steps.short_sha.outputs.sha_short }}
