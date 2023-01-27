@@ -4,7 +4,7 @@
 name: Integrity
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}/Integrity
   cancel-in-progress: true
 
 on:
