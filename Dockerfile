@@ -7,5 +7,5 @@ FROM openjdk:11
 RUN mkdir /app
 EXPOSE 8080
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/application.jar
-
+COPY --from=build /home/gradle/src/.env /app/.env
 ENTRYPOINT ["java", "-jar","/app/application.jar"]
