@@ -6,8 +6,6 @@ RUN gradle build --no-daemon
 FROM openjdk:11
 
 EXPOSE 8080
-ENTRYPOINT [ "gradle", "run" ]
-
 
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/application.jar
 
