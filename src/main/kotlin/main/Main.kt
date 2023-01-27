@@ -4,9 +4,16 @@ import dev.kord.common.annotation.KordPreview
 import io.github.cdimascio.dotenv.dotenv
 import io.github.crackthecodeabhi.kreds.connection.Endpoint
 import io.github.crackthecodeabhi.kreds.connection.newClient
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import main.leetcode.LeetcodeService
+import me.jakejmattson.discordkt.annotations.Service
 import me.jakejmattson.discordkt.dsl.bot
 import me.jakejmattson.discordkt.locale.Language
 
@@ -15,6 +22,18 @@ object Environment {
 
     val discordToken: String get() = dotenv.get("DISCORD_BOT_TOKEN")
     val redisUri: String get() = dotenv.get("REDIS")
+
+    val client = HttpClient(CIO) {
+        install(Logging)
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    prettyPrint = true
+                    isLenient = true
+                }
+            )
+        }
+    }
 }
 
 @OptIn(KordPreview::class)
