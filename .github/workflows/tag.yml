@@ -32,8 +32,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -u
-          pwd
-          ls
           #          cd /github/workspace || exit 1
           
           # Env and options
