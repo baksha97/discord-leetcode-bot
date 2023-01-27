@@ -34,20 +34,20 @@ jobs:
           set -u
           pwd
           ls
-           #          cd /github/workspace || exit 1
+          #          cd /github/workspace || exit 1
           
-           # Env and options
-                if [[ -z ${GITHUB_TOKEN} ]]
-                then
-                echo "The GITHUB_TOKEN environment variable is not defined."
-                exit 1
-                fi
+          # Env and options
+          if [[ -z ${GITHUB_TOKEN} ]]
+          then
+          echo "The GITHUB_TOKEN environment variable is not defined."
+          exit 1
+          fi
           
-                BRANCH=${1}
-               NAME=${2}
-          MESSAGE=${3}
-          DRAFT=${4}
-          PRERELEASE=${5}
+          BRANCH=main
+          NAME=${{ steps.short_sha.outputs.sha_short }}
+          MESSAGE=${{ steps.short_sha.outputs.sha_short }}
+          DRAFT=false
+          PRERELEASE=false
           TAG=${{ steps.short_sha.outputs.sha_short }}
           GENERATE_RELEASE_NOTES=false
           PREVIOUS_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
