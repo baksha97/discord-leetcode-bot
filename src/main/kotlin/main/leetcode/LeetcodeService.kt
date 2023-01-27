@@ -63,7 +63,14 @@ class RedisLeetcodeRegistry : LeetcodeRegistry {
 class LeetcodeService(private val registry: LeetcodeRegistry) {
 
     private val client = HttpClient(CIO) {
-        install(Logging)
+        install(Logging) {
+            logger = object: Logger {
+                override fun log(message: String) {
+                    println(message)
+                }
+            }
+            level = LogLevel.HEADERS
+        }
         install(ContentNegotiation) {
             json(
                 Json {
