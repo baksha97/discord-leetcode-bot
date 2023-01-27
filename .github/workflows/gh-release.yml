@@ -25,5 +25,6 @@ jobs:
         uses: nickatnight/releases-action@v4
         with:
           name: main-${{ steps.short_sha.outputs.sha_short }}
+          tag_name: main-${{ steps.short_sha.outputs.sha_short }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
