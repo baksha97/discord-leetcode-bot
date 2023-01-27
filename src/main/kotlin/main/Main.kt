@@ -24,7 +24,14 @@ object Environment {
     val redisUri: String get() = dotenv.get("REDIS")
 
     val client = HttpClient(CIO) {
-        install(Logging)
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    println(message)
+                }
+            }
+            level = LogLevel.ALL
+        }
         install(ContentNegotiation) {
             json(
                 Json {

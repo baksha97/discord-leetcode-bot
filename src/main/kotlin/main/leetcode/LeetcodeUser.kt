@@ -3,7 +3,7 @@ package main.leetcode
 import kotlinx.serialization.*
 
 @Serializable
-data class LeetcodeStatistic (
+data class LeetcodeUser (
     val username: String,
 //    val status: String,
 //    val message: String,

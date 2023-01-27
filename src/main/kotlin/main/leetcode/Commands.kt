@@ -2,7 +2,7 @@ package main
 
 import dev.kord.common.Color
 import main.leetcode.LeetcodeService
-import main.leetcode.LeetcodeStatistic
+import main.leetcode.LeetcodeUser
 import me.jakejmattson.discordkt.arguments.AnyArg
 import me.jakejmattson.discordkt.commands.CommandSet
 import me.jakejmattson.discordkt.commands.commands
@@ -24,8 +24,13 @@ fun buildLeetcodeCommands(
         execute {
             runCatching {
                 val username = service.get(author.id)!!
-                val stats = service.getStatistics(username)
-                sendStatistic(username, stats)
+                service.getStatistics(username)
+                    .fold(
+                        onSuccess = { sendStatistic(username, it) },
+                        onFailure = { respond("Something went wrong: $it") }
+                    )
+
+
             }.onFailure {
                 when(it) {
                     is NullPointerException ->
@@ -49,8 +54,8 @@ fun buildLeetcodeCommands(
     }
 }
 
-suspend fun SlashResponder.sendStatistic(username: String, statistic: LeetcodeStatistic) = respondPublic {
-    title = "$username statistics"
+suspend fun SlashResponder.sendStatistic(username: String, statistic: LeetcodeUser) = respondPublic {
+    title = "$username statistics dev"
     color = Color(0x00bfff)
     url = "https://leetcode.com/$username/"
 
@@ -81,7 +86,7 @@ suspend fun SlashResponder.sendStatistic(username: String, statistic: LeetcodeSt
     }
 }
 
-suspend fun SlashResponder.sendLeaderboard(data: List<Pair<String, LeetcodeStatistic>>) = respondPublic {
+suspend fun SlashResponder.sendLeaderboard(data: List<Pair<String, LeetcodeUser>>) = respondPublic {
     title = "Leaderboard"
     color = Color(0x00bfff)
 

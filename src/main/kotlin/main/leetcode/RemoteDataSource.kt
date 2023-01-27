@@ -2,46 +2,51 @@ package main.leetcode
 
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
 import main.Environment
 import me.jakejmattson.discordkt.annotations.Service
 
 
 @Service
 class LeetcodeRemoteDatasource {
-    suspend fun getStatistics(username: String): LeetcodeStatistic =
-        Environment.client.fetchLeetcodeStatistics(username).toDomain(username)
+    suspend fun getStatistics(username: String): Result<LeetcodeUser> =
+        Environment
+            .client
+            .fetchLeetcodeStatistics(username)
+            .map { it.toDomain(username) }
+
 }
 
-private suspend fun HttpClient.fetchLeetcodeStatistics(username: String): LeetcodeStatisticResponse {
-    val query = String.format(
-        "{\"query\":\"query getUserProfile(\$username: String!) { allQuestionsCount { difficulty count } matchedUser(username: \$username) { contributions { points } profile { reputation ranking } submissionCalendar submitStats { acSubmissionNum { difficulty count submissions } totalSubmissionNum { difficulty count submissions } } } } \",\"variables\":{\"username\":\"%s\"}}",
-        username
-    )
+private suspend fun HttpClient.fetchLeetcodeStatistics(username: String, year: Int = 2023): Result<LeetcodeQueryResponse> {
+    val query =
+        """
+            {
+            "query":"query getUserProfile(${"$"}username: String!, ${"$"}year: Int!) { allQuestionsCount { difficulty count } matchedUser(username: ${"$"}username) { userCalendar(year: ${"$"}year) { activeYears streak totalActiveDays submissionCalendar } problemsSolvedBeatsStats { difficulty percentage } submitStatsGlobal { acSubmissionNum { difficulty count } } contributions { points } profile { userAvatar realName aboutMe postViewCount postViewCountDiff reputation reputationDiff solutionCount solutionCountDiff categoryDiscussCount categoryDiscussCountDiff reputation ranking } submissionCalendar submitStats { acSubmissionNum { difficulty count submissions } totalSubmissionNum { difficulty count submissions } } } }",
+            "variables":{"username":"$username", "year": $year}
+            }
+        """.trimIndent()
 
-    return get {
-        url {
-            protocol = URLProtocol.HTTPS
-            host = "leetcode.com"
-            method = HttpMethod.Post
-            header("referer", "https://leetcode.com/$username/")
-            header("Content-Type", "application/json")
-            appendPathSegments("graphql")
-            setBody(query)
-        }
-    }.body()
+    return runCatching {
+        get {
+            url {
+                protocol = URLProtocol.HTTPS
+                host = "leetcode.com"
+                method = HttpMethod.Post
+                header("referer", "https://leetcode.com/$username/")
+                header("Content-Type", "application/json")
+                appendPathSegments("graphql")
+                setBody(query)
+            }
+        }.body()
+    }
+
 }
 
-private fun LeetcodeStatisticResponse.toDomain(username: String): LeetcodeStatistic {
+private fun LeetcodeQueryResponse.toDomain(username: String): LeetcodeUser {
     fun findOrDefaultSolved(difficulty: String): Long =
-        data.matchedUser.submitStats.acSubmissionNum.find { it.difficulty == difficulty }?.count ?: 0
+        data.matchedUser.submitStatsGlobal.acSubmissionNum.find { it.difficulty == difficulty }?.count ?: 0
 
     fun calculateAcceptanceRate(): Double {
         val actual = findOrDefaultSolved("All").takeIf { it != 0L } ?: return 0.0
@@ -49,7 +54,7 @@ private fun LeetcodeStatisticResponse.toDomain(username: String): LeetcodeStatis
         return (actual / total).toDouble()
     }
 
-    return LeetcodeStatistic(
+    return LeetcodeUser(
         username = username,
         totalSolved = findOrDefaultSolved("All"),
         easySolved = findOrDefaultSolved("Easy"),
@@ -61,27 +66,33 @@ private fun LeetcodeStatisticResponse.toDomain(username: String): LeetcodeStatis
     )
 }
 
-
+suspend fun main() {
+    val res = LeetcodeRemoteDatasource().getStatistics("aarif22827")
+    println(res)
+}
 
 @Serializable
-private data class LeetcodeStatisticResponse (
+data class LeetcodeQueryResponse (
     val data: Data
 )
 
 @Serializable
-private data class Data (
+data class Data (
     val allQuestionsCount: List<AllQuestionsCount>,
     val matchedUser: MatchedUser
 )
 
 @Serializable
-private data class AllQuestionsCount (
+data class AllQuestionsCount (
     val difficulty: String,
     val count: Long
 )
 
 @Serializable
-private data class MatchedUser (
+data class MatchedUser (
+    val userCalendar: UserCalendar,
+    val problemsSolvedBeatsStats: List<ProblemsSolvedBeatsStat>,
+    val submitStatsGlobal: SubmitStatsGlobal,
     val contributions: Contributions,
     val profile: Profile,
     val submissionCalendar: String,
@@ -89,25 +100,54 @@ private data class MatchedUser (
 )
 
 @Serializable
-private data class Contributions (
+data class Contributions (
     val points: Long
 )
 
 @Serializable
-private data class Profile (
+data class ProblemsSolvedBeatsStat (
+    val difficulty: String,
+    val percentage: Double
+)
+
+@Serializable
+data class Profile (
+    val userAvatar: String,
+    val realName: String,
+    val aboutMe: String,
+    val postViewCount: Long,
+    val postViewCountDiff: Long,
     val reputation: Long,
+    val reputationDiff: Long,
+    val solutionCount: Long,
+    val solutionCountDiff: Long,
+    val categoryDiscussCount: Long,
+    val categoryDiscussCountDiff: Long,
     val ranking: Long
 )
 
 @Serializable
-private data class SubmitStats (
+data class SubmitStats (
     val acSubmissionNum: List<SubmissionNum>,
     val totalSubmissionNum: List<SubmissionNum>
 )
 
 @Serializable
-private data class SubmissionNum (
+data class SubmissionNum (
     val difficulty: String,
     val count: Long,
     val submissions: Long
+)
+
+@Serializable
+data class SubmitStatsGlobal (
+    val acSubmissionNum: List<AllQuestionsCount>
+)
+
+@Serializable
+data class UserCalendar (
+    val activeYears: List<Long>,
+    val streak: Long,
+    val totalActiveDays: Long,
+    val submissionCalendar: String
 )
