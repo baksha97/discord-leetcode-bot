@@ -3,9 +3,15 @@
 
 name: Integrity
 
+concurrency:
+  group: ${{ github.ref }}/Integrity
+  cancel-in-progress: true
+
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
+    paths-ignore:
+      - '.github/**'
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
@@ -25,4 +31,4 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: build
+          arguments: build --no-daemon

@@ -2,7 +2,7 @@ package main
 
 import dev.kord.common.Color
 import main.leetcode.LeetcodeService
-import main.leetcode.LeetcodeUser
+import main.leetcode.LeetcodeStatistics
 import me.jakejmattson.discordkt.arguments.AnyArg
 import me.jakejmattson.discordkt.commands.CommandSet
 import me.jakejmattson.discordkt.commands.commands
@@ -14,9 +14,13 @@ fun buildLeetcodeCommands(
 
     slash("Register", "Register your Leetcode") {
         execute(AnyArg("username")) {
-            val id = "${author.id.value}"
-            service.register(id = id, args.first.trim())
-            respond("Successfully registered to your discord account.")
+            runCatching {
+                val id = "${author.id.value}"
+                service.register(id = id, args.first.trim())
+                respond("Successfully registered to your discord account.")
+            }.onFailure {
+                respond("Something went wrong: $it")
+            }
         }
     }
 
@@ -24,13 +28,8 @@ fun buildLeetcodeCommands(
         execute {
             runCatching {
                 val username = service.get(author.id)!!
-                service.getStatistics(username)
-                    .fold(
-                        onSuccess = { sendStatistic(username, it) },
-                        onFailure = { respond("Something went wrong: $it") }
-                    )
-
-
+                val statistic = service.getStatistics(username).getOrThrow()
+                sendStatistic(username = username, statistic = statistic)
             }.onFailure {
                 when(it) {
                     is NullPointerException ->
@@ -54,7 +53,7 @@ fun buildLeetcodeCommands(
     }
 }
 
-suspend fun SlashResponder.sendStatistic(username: String, statistic: LeetcodeUser) = respondPublic {
+suspend fun SlashResponder.sendStatistic(username: String, statistic: LeetcodeStatistics) = respondPublic {
     title = "$username statistics dev"
     color = Color(0x00bfff)
     url = "https://leetcode.com/$username/"
@@ -86,7 +85,7 @@ suspend fun SlashResponder.sendStatistic(username: String, statistic: LeetcodeUs
     }
 }
 
-suspend fun SlashResponder.sendLeaderboard(data: List<Pair<String, LeetcodeUser>>) = respondPublic {
+suspend fun SlashResponder.sendLeaderboard(data: List<Pair<String, LeetcodeStatistics>>) = respondPublic {
     title = "Leaderboard"
     color = Color(0x00bfff)
 

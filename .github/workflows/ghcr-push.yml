@@ -12,7 +12,11 @@ name: Create and publish a Docker image
 on:
   workflow_dispatch:
   push:
-    tags: ['*']
+    tags: [ '*' ]
+
+concurrency:
+  group: ${{ github.ref }}/ghr-push
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
@@ -20,7 +24,7 @@ env:
 
 jobs:
   build-and-push-image:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
